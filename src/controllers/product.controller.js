@@ -68,13 +68,14 @@ async function findProductByCategory(req, res) {
 // Search products by query
 async function searchProduct(req, res) {
   try {
-    const query = req.params.query;
-    const products = await productService.searchProduct(query);
-    res.json(products);
+      const query = req.params.lavelthree; // accessing the 'lavelthree' parameter
+      const products = await productService.searchProduct(query);
+      res.json(products);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
   }
 }
+
 
 // Get all products with filtering and pagination
 async function getAllProducts(req, res) {
@@ -87,17 +88,20 @@ async function getAllProducts(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
-
 const createMultipleProduct= async (req, res) => {
+
   try {
     await productService.createMultipleProduct(req.body)
+    console.log("creating multiple products")
+
     res
       .status(202)
       .json({ message: "Products Created Successfully", success: true });
-  } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    } catch (error) {
+      console.error("Error creating products:", error);
+      res.status(500).json({ error: error.message });
   }
-};
+}  
 
 module.exports = {
   createProduct,
