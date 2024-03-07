@@ -3,6 +3,7 @@ const Product = require("../models/product.model");
 
 // Create a new product
 async function createProduct(reqData) {
+  
   let topLevel = await Category.findOne({ name: reqData.topLavelCategory });
 
   if (!topLevel) {
@@ -171,6 +172,27 @@ async function createMultipleProduct(products) {
   }
 }
 
+
+async function searchProduct(query) {
+    try {
+        // Example: searching products by name or any other criteria
+        const products = await Product.find({ 
+            Category:thirdLavelCategory, // assuming there's a 'level' field in your Product schema
+            name: { $regex: query, $options: 'i' }
+        });
+
+        if (products.length === 0) {
+            return [{ message: 'No results found' }];
+        }
+
+        return products;
+    } catch (error) {
+        throw new Error('Error searching products');
+    }
+}
+
+
+
 module.exports = {
   createProduct,
   deleteProduct,
@@ -178,4 +200,5 @@ module.exports = {
   getAllProducts,
   findProductById,
   createMultipleProduct,
+  searchProduct
 };
