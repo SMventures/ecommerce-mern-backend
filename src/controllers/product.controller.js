@@ -1,13 +1,37 @@
 // productController.js
 const productService = require("../services/product.service.js")
 
-// Create a new product
-async function createProduct(req, res) {
+async function createProduct(req, res, next) {
   try {
-    const product = await productService.createProduct(req.body);
+    console.log("Request body:", req.body);
+
+    // Conditional buffer access (crucial for memory storage)
+    let dataURI;
+    if (req.file && req.file.buffer) {
+      console.log("File information:", req.file); // Log file details
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+    } else {
+      console.log("No file attached to request.");
+      // Handle the case where a file is not uploaded
+    }
+
+    const productData = {
+      ...req.body,
+      size: typeof req.body.size === 'object' ? req.body.size : {} ,
+      image: dataURI
+
+    };
+    
+    const product = await productService.createProduct(productData);
     return res.status(201).json(product);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    if (err.code === 'ENOENT') {
+      return res.status(400).json({ error: "File not found" });
+    } else {
+      console.error('Error:', err.message);
+      return res.status(500).json({ error: "Internal server error" });
+    }
   }
 }
 
@@ -68,9 +92,13 @@ async function findProductByCategory(req, res) {
 // Search products by query
 async function searchProduct(req, res) {
   try {
-      const query = req.params.lavelthree; // accessing the 'lavelthree' parameter
+
+      const query = req.params.query // accessing the 'lavelthree' parameter
       const products = await productService.searchProduct(query);
-      res.json(products);
+      console.log(products)
+      res.json({
+        data: products
+      });
   } catch (err) {
       res.status(500).json({ error: err.message });
   }
@@ -88,9 +116,10 @@ async function getAllProducts(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
-const createMultipleProduct= async (req, res) => {
+const createMultipleProduct= async (req, res,next) => {
 
   try {
+    
     await productService.createMultipleProduct(req.body)
     console.log("creating multiple products")
 

@@ -1,10 +1,16 @@
 const express=require("express")
 const cors=require('cors');
-
 const app=express();
-
 app.use(express.json())
 app.use(cors())
+
+
+
+
+// // config
+// if (process.env.NODE_ENV !== 'production') {
+//     require('dotenv').config({ path: 'backend/config/config.env' });
+// }
 
 app.get("/",(req,res)=>{
     return res.status(200).send({message:"welcome to ecommerce api - node"})
