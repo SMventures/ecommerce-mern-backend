@@ -1,5 +1,7 @@
 // productController.js
 const productService = require("../services/product.service.js")
+const { ObjectId } = require('mongodb');
+const Category = require("../models/category.model");
 
 async function createProduct(req, res, next) {
   try {
@@ -45,6 +47,30 @@ async function deleteProduct(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
+
+
+async function getSimilarProducts(req, res, next) {
+  try {
+    const categoryName = req.params.category;
+    console.log("getting similar products", categoryName);
+
+    const category = await Category.findOne({ name: categoryName });
+
+    if (!category) {
+      throw new Error('Category not found');
+    }
+
+    const categoryId = category._id;
+
+    const similarProducts = await productService.getSimilarProductsByCategory(categoryId);
+
+    res.json(similarProducts);
+  } catch (error) {
+    next(error);
+  }
+}
+
+
 
 // Update a product by ID
 async function updateProduct(req, res) {
@@ -140,6 +166,6 @@ module.exports = {
   findProductById,
   findProductByCategory,
   searchProduct,
-  createMultipleProduct
-
+  createMultipleProduct,
+  getSimilarProducts
 };

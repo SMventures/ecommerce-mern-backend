@@ -2,7 +2,7 @@ const Category = require("../models/category.model");
 const Product = require("../models/product.model");
 const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
-
+const { ObjectId } = require('mongodb');
 
 
 
@@ -25,10 +25,6 @@ async function createProduct(reqData) {
       //         folder: "products",
       //     });
 
-          // imageLink.push({
-          //     public_id: result.public_id,
-          //     url: result.secure_url,
-          // });
       
       const result  = await cloudinary.uploader.upload(reqData.image, {
                 folder: "products",
@@ -38,6 +34,10 @@ async function createProduct(reqData) {
                 url: result.secure_url,
             }
           
+    //   imageLink.push({
+    //     public_id: result.public_id,
+    //     url: result.secure_url,
+    // });
   
       console.log("Images Uploaded:", imageLink);
 
@@ -266,6 +266,35 @@ async function createMultipleProduct(products) {
     await createProduct(product);
   }
 }
+async function getSimilarProductsByCategory(category) {
+  try {
+    console.log('Fetching similar products for category:', category);
+
+    const objectId = new ObjectId(category); // Convert the category parameter to an ObjectId
+    const similarProduct = await Product.findOne({ category: objectId });
+
+    if (!similarProduct) {
+      console.log('No similar product found for the given category');
+      throw new Error('No similar product found for the given category');
+    }
+
+    console.log('Similar product found:', similarProduct);
+
+    const similarProducts = await Product.find({
+      category: objectId,
+      _id: { $ne: similarProduct._id },
+    });
+
+    console.log('Similar products:', similarProducts);
+
+    return similarProducts;
+  } catch (error) {
+    console.error('Error fetching similar products:', error);
+    throw new Error('Error fetching similar products');
+  }
+}
+
+
 
 
 async function searchProduct(query) {
@@ -299,5 +328,6 @@ module.exports = {
   getAllProducts,
   findProductById,
   createMultipleProduct,
-  searchProduct
+  searchProduct,
+  getSimilarProductsByCategory
 };
