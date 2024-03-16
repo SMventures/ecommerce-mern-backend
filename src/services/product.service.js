@@ -49,6 +49,8 @@ async function createProduct(reqData) {
     title: reqData.title,
     color: reqData.color,
     description: reqData.description,
+    highlights: reqData.highlights,
+    specifications: reqData.specifications,
     discountedPrice: reqData.discountedPrice,
     discountPersent: reqData.discountPersent,
     imageUrl: reqData.imageUrl,
