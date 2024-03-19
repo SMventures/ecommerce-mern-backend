@@ -129,9 +129,18 @@ async function deleteProduct(productId) {
 
 async function updateProduct(productId, reqData) {
   try {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+
+    console.log("Updating product with ID:", productId); // Log productId
+
     const product = await Product.findById(productId);
 
     if (!product) {
+      console.error('Product not found for ID:', productId); // Log productId if product not found
       throw new Error('Product not found');
     }
 
@@ -171,11 +180,13 @@ async function updateProduct(productId, reqData) {
 
     const updatedProduct = await Product.findByIdAndUpdate(productId, reqData, { new: true });
 
-    return updatedProduct;
+    return updatedProduct; // Return the updated product
   } catch (error) {
+    console.error(`Error updating product: ${error.message}`);
     throw new Error(`Error updating product: ${error.message}`);
   }
 }
+
 
 // Find a product by ID
 async function findProductById(id) {

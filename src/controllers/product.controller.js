@@ -73,15 +73,40 @@ async function getSimilarProducts(req, res, next) {
 
 
 // Update a product by ID
-async function updateProduct(req, res) {
+async function updateProduct(req, res, next) {
   try {
     const productId = req.params.id;
-    const product = await productService.updateProduct(productId, req.body);
+    console.log("Request body:", req.body);
+
+    // Conditional buffer access (crucial for memory storage)
+    let dataURI;
+    if (req.file && req.file.buffer) {
+      console.log("File information:", req.file); // Log file details
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+    } else {
+      console.log("No file attached to request.");
+      // Handle the case where a file is not uploaded
+    }
+
+    const productData = {
+      ...req.body,
+      size: typeof req.body.size === 'object' ? req.body.size : {} ,
+      image: dataURI
+    };
+
+    const product = await productService.updateProduct(productId, productData);
     return res.json(product);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (err.code === 'ENOENT') {
+      return res.status(400).json({ error: "File not found" });
+    } else {
+      console.error('Error:', err.message);
+      return res.status(500).json({ error: "Internal server error" });
+    }
   }
 }
+
 
 // Get all products
 // async function getAllProducts(req, res) {
