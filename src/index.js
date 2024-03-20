@@ -50,4 +50,10 @@ app.use("/api/ratings",ratingRouter);
 const adminOrderRoutes=require("./routes/adminOrder.routes.js");
 app.use("/api/admin/orders",adminOrderRoutes);
 
+const wishlistRouter=require("./routes/wishlist.routes.js")
+app.use("/api/wishlist", wishlistRouter);
+
+const wishlistItemRouter=require("./routes/wishlistItem.routes.js")
+app.use("/api/wishlist_items",wishlistItemRouter);
+
 module.exports={app};
