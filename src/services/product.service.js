@@ -4,6 +4,7 @@ const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
 const { ObjectId } = require('mongodb');
 
+const mongoose = require('mongoose');
 
 
 async function createProduct(reqData) {
@@ -112,15 +113,18 @@ async function createProduct(reqData) {
 // Delete a product by ID
 async function deleteProduct(productId) {
   const product = await findProductById(productId);
+  console.log("deletetdtvygvg",product.images);
 
   if (!product) {
     throw new Error("Product not found with id: " + productId);
   }
 
+
   // Delete product images from Cloudinary
+  if(product.images){
   for (let i = 0; i < product.images.length; i++) {
     await cloudinary.v2.uploader.destroy(product.images[i].public_id);
-  }
+  }}
 
   // Delete product from the database
   await Product.findByIdAndDelete(productId);
@@ -138,8 +142,15 @@ async function updateProduct(productId, reqData) {
     });
 
     console.log("Updating product with ID:", productId); // Log productId
+    console.log("Request data:", reqData); // Log reqData
+    // Ensure productId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      throw new Error("Invalid productId");
+    }
+
 
     const product = await Product.findById(productId);
+    console.log(`this is the product fetch with id: ${productId} ok then product is this `,product);
 
     if (!product) {
       console.error('Product not found for ID:', productId); // Log productId if product not found
@@ -179,8 +190,10 @@ async function updateProduct(productId, reqData) {
 
       reqData.images = imagesLink;
     }
-
+    console.log("this is the data with whcih we are updating it",reqData);
     const updatedProduct = await Product.findByIdAndUpdate(productId, reqData, { new: true });
+    const updatedProductdescription= await Product.findById(productId);
+    console.log("this is the update product ",updatedProductdescription)
 
     return updatedProduct; // Return the updated product
   } catch (error) {

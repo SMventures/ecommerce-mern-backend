@@ -40,7 +40,7 @@ async function createProduct(req, res, next) {
 // Delete a product by ID
 async function deleteProduct(req, res) {
   try {
-    const productId = req.params.id;
+    const productId = req.params.id
     const message = await productService.deleteProduct(productId);
     return res.json({ message });
   } catch (err) {
@@ -70,13 +70,22 @@ async function getSimilarProducts(req, res, next) {
   }
 }
 
-
+//  Find a product by ID
+async function findProductById(req, res) {
+  try {
+    const productId = req.params.id;
+    const product = await productService.findProductById(productId);
+    res.status(200).send(product);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+}
 
 // Update a product by ID
 async function updateProduct(req, res, next) {
   try {
-    const productId = req.params.id;
-    console.log("Request body:", req.body);
+    const productId = req.params.productId
+    console.log("req params is this ",productId);
 
     // Conditional buffer access (crucial for memory storage)
     let dataURI;
@@ -88,6 +97,7 @@ async function updateProduct(req, res, next) {
       console.log("No file attached to request.");
       // Handle the case where a file is not uploaded
     }
+    console.log("this is request body ",req.body);
 
     const productData = {
       ...req.body,
@@ -118,16 +128,7 @@ async function updateProduct(req, res, next) {
 //   }
 // }
 
-// Find a product by ID
-async function findProductById(req, res) {
-  try {
-    const productId = req.params.id;
-    const product = await productService.findProductById(productId);
-    return res.status(200).send(product);
-  } catch (err) {
-    return res.status(404).json({ message: err.message });
-  }
-}
+
 
 // Find products by category
 async function findProductByCategory(req, res) {
@@ -188,9 +189,10 @@ module.exports = {
   deleteProduct,
   updateProduct,
   getAllProducts,
-  findProductById,
   findProductByCategory,
   searchProduct,
   createMultipleProduct,
-  getSimilarProducts
+  getSimilarProducts,
+  findProductById
+
 };

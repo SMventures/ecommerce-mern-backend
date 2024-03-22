@@ -14,8 +14,8 @@ router.post('/', upload.single('imageFile'), productController.createProduct);
 
 // Other routes (no Multer needed for these)
 router.post('/creates', productController.createMultipleProduct);
-router.post('/update/:productId',productController.updateProduct)
+router.put('/update/:productId',productController.updateProduct)
 router.delete('/:id', productController.deleteProduct);
-router.put('/:id', productController.updateProduct);
+// router.put('/:id', productController.updateProduct);
 
 module.exports = router;

@@ -15,20 +15,54 @@ async function createWishlistItem(wishlistItemData) {
 // Update an existing wishlist item
 async function updateWishlistItem(userId, wishlistItemId, wishlistItemData) {
   try {
-    const item = await findWishlistItemById(wishlistItemId);
-    const user = await userService.findUserById(item.userId);
+    // Log the input parameters for debugging
+    console.log("userId:", userId);
+    console.log("wishlistItemId:", wishlistItemId);
+    console.log("wishlistItemData:", wishlistItemData);
 
-    if (!user || user.id !== userId) {
-      throw new Error("You can't update another user's wishlist item");
+    // Find the wishlist item by ID
+    const item = await findWishlistItemById(wishlistItemId);
+
+    // Log the retrieved wishlist item for debugging
+    console.log("Retrieved Wishlist Item:", item);
+
+    if (!item) {
+      throw new Error("wishlist item not found: " + wishlistItemId);
     }
 
-    item.size = wishlistItemData.size;
-    const updatedWishlistItem = await item.save();
-    return updatedWishlistItem;
+    // Find the user associated with the wishlist item
+    const user = await userService.findUserById(item.userId);
+
+    // Log the retrieved user for debugging
+    console.log("Retrieved User:", user);
+
+    if (!user) {
+      throw new Error("user not found: " + userId);
+    }
+
+    if (user.id === userId.toString()) {
+      // Update the size of the wishlist item
+      item.size = wishlistItemData.size;
+
+      // Save the updated wishlist item
+      const updatedWishlistItem = await item.save();
+
+      // Log the updated wishlist item for debugging
+      console.log("Updated Wishlist Item:", updatedWishlistItem);
+
+      // Return the updated wishlist item
+      return updatedWishlistItem;
+    } else {
+      throw new Error("You can't update another user's wishlist_item");
+    }
   } catch (error) {
+    // Log any errors for debugging
+    console.error("Error updating wishlist item:", error.message);
     throw new Error("Error updating wishlist item: " + error.message);
   }
 }
+
+
 
 // Check if a wishlist item already exists in the user's wishlist
 async function isWishlistItemExist(wishlist, product, size, userId) {
@@ -41,8 +75,9 @@ async function removeWishlistItem(userId, wishlistItemId) {
   try {
     const item = await findWishlistItemById(wishlistItemId);
     const user = await userService.findUserById(item.userId);
+    console.log(user.id == userId);
 
-    if (!user || user.id !== userId) {
+    if (user.id != userId) {
       throw new Error("You can't remove another user's wishlist item");
     }
 
