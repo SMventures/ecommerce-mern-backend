@@ -133,6 +133,74 @@ async function deleteProduct(productId) {
 }
 
 
+// async function updateProduct(productId, reqData) {
+//   try {
+//     cloudinary.config({
+//       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//       api_key: process.env.CLOUDINARY_API_KEY,
+//       api_secret: process.env.CLOUDINARY_API_SECRET
+//     });
+
+//     console.log("Updating product with ID:", productId); // Log productId
+//     console.log("Request data:", reqData); // Log reqData
+//     // Ensure productId is a valid ObjectId
+//     if (!mongoose.Types.ObjectId.isValid(productId)) {
+//       throw new Error("Invalid productId");
+//     }
+
+
+//     const product = await Product.findById(productId);
+//     console.log(`this is the product fetch with id: ${productId} ok then product is this `,product);
+
+//     if (!product) {
+//       console.error('Product not found for ID:', productId); // Log productId if product not found
+//       throw new Error('Product not found');
+//     }
+
+//     if (reqData.images !== undefined) {
+//       let imagesLink = [];
+
+//       // Delete existing images from Cloudinary
+//       for (let i = 0; i < product.images.length; i++) {
+//         await cloudinary.uploader.destroy(product.images[i].public_id);
+//       }
+
+//       // Upload new images to Cloudinary
+//       if (Array.isArray(reqData.images)) {
+//         for (let i = 0; i < reqData.images.length; i++) {
+//           const result = await cloudinary.uploader.upload(reqData.images[i], {
+//             folder: "products",
+//           });
+
+//           imagesLink.push({
+//             public_id: result.public_id,
+//             url: result.secure_url,
+//           });
+//         }
+//       } else if (typeof reqData.images === "string") {
+//         const result = await cloudinary.uploader.upload(reqData.images, {
+//           folder: "products",
+//         });
+
+//         imagesLink.push({
+//           public_id: result.public_id,
+//           url: result.secure_url,
+//         });
+//       }
+
+//       reqData.images = imagesLink;
+//     }
+//     console.log("this is the data with whcih we are updating it",reqData);
+//     const updatedProduct = await Product.findByIdAndUpdate(productId, reqData, { new: true });
+//     const updatedProductdescription= await Product.findById(productId);
+//     console.log("this is the update product ",updatedProductdescription)
+
+//     return updatedProduct; // Return the updated product
+//   } catch (error) {
+//     console.error(`Error updating product: ${error.message}`);
+//     throw new Error(`Error updating product: ${error.message}`);
+//   }
+// }
 async function updateProduct(productId, reqData) {
   try {
     cloudinary.config({
@@ -148,52 +216,33 @@ async function updateProduct(productId, reqData) {
       throw new Error("Invalid productId");
     }
 
-
     const product = await Product.findById(productId);
-    console.log(`this is the product fetch with id: ${productId} ok then product is this `,product);
+    console.log(`Product fetched with id: ${productId}`, product);
 
     if (!product) {
-      console.error('Product not found for ID:', productId); // Log productId if product not found
+      console.error('Product not found for ID:', productId);
       throw new Error('Product not found');
     }
 
-    if (reqData.images !== undefined) {
-      let imagesLink = [];
+    // Check if imageFile is provided
+    if (reqData.imageFile) {
+      // Upload new image to Cloudinary
+      const result = await cloudinary.uploader.upload(reqData.imageFile.path, {
+        folder: "products",
+      });
+
+      // Store image URL in reqData
+      reqData.imageUrl = result.secure_url;
 
       // Delete existing images from Cloudinary
       for (let i = 0; i < product.images.length; i++) {
         await cloudinary.uploader.destroy(product.images[i].public_id);
       }
-
-      // Upload new images to Cloudinary
-      if (Array.isArray(reqData.images)) {
-        for (let i = 0; i < reqData.images.length; i++) {
-          const result = await cloudinary.uploader.upload(reqData.images[i], {
-            folder: "products",
-          });
-
-          imagesLink.push({
-            public_id: result.public_id,
-            url: result.secure_url,
-          });
-        }
-      } else if (typeof reqData.images === "string") {
-        const result = await cloudinary.uploader.upload(reqData.images, {
-          folder: "products",
-        });
-
-        imagesLink.push({
-          public_id: result.public_id,
-          url: result.secure_url,
-        });
-      }
-
-      reqData.images = imagesLink;
     }
-    console.log("this is the data with whcih we are updating it",reqData);
+
+    // Update the product with reqData
     const updatedProduct = await Product.findByIdAndUpdate(productId, reqData, { new: true });
-    const updatedProductdescription= await Product.findById(productId);
-    console.log("this is the update product ",updatedProductdescription)
+    console.log("Updated product:", updatedProduct);
 
     return updatedProduct; // Return the updated product
   } catch (error) {
@@ -227,38 +276,50 @@ async function getAllProducts(reqQuery) {
     pageNumber,
     pageSize,
   } = reqQuery;
-  (pageSize = pageSize || 10), (pageNumber = pageNumber || 1);
+
+  console.log(category);
+
+  // Set default values for pageSize and pageNumber
+  pageSize = pageSize || 10;
+  pageNumber = pageNumber || 1;
+
   let query = Product.find().populate("category");
 
-
+  // Filter by category if provided
   if (category) {
     const existCategory = await Category.findOne({ name: category });
-    if (existCategory)
+    console.log(existCategory)
+    if (existCategory) {
       query = query.where("category").equals(existCategory._id);
-    else return { content: [], currentPage: 1, totalPages:1 };
+    } else {
+      return { content: [], currentPage: 1, totalPages: 1 };
+    }
   }
 
+  // Apply color filter
   if (color) {
-    const colorSet = new Set(color.split(",").map(color => color.trim().toLowerCase()));
+    const colorSet = new Set(color.split(",").map(c => c.trim().toLowerCase()));
     const colorRegex = colorSet.size > 0 ? new RegExp([...colorSet].join("|"), "i") : null;
     query = query.where("color").regex(colorRegex);
-    // query = query.where("color").in([...colorSet]);
   }
 
+  // Apply size filter
   if (sizes) {
     const sizesSet = new Set(sizes);
-    
     query = query.where("sizes.name").in([...sizesSet]);
   }
 
+  // Apply price range filter
   if (minPrice && maxPrice) {
     query = query.where("discountedPrice").gte(minPrice).lte(maxPrice);
   }
 
+  // Apply minimum discount filter
   if (minDiscount) {
     query = query.where("discountPersent").gt(minDiscount);
   }
 
+  // Apply stock availability filter
   if (stock) {
     if (stock === "in_stock") {
       query = query.where("quantity").gt(0);
@@ -267,6 +328,7 @@ async function getAllProducts(reqQuery) {
     }
   }
 
+  // Apply sorting
   if (sort) {
     const sortDirection = sort === "price_high" ? -1 : 1;
     query = query.sort({ discountedPrice: sortDirection });
@@ -274,18 +336,15 @@ async function getAllProducts(reqQuery) {
 
   // Apply pagination
   const totalProducts = await Product.countDocuments(query);
-
   const skip = (pageNumber - 1) * pageSize;
-
   query = query.skip(skip).limit(pageSize);
-
   const products = await query.exec();
-
   const totalPages = Math.ceil(totalProducts / pageSize);
+  console.log("these are the products fetchedddd by category param",products)
 
-
-  return { content: products, currentPage: pageNumber, totalPages:totalPages };
+  return { content: products, currentPage: pageNumber, totalPages };
 }
+
 
 async function createMultipleProduct(products) {
   for (let product of products) {
