@@ -291,7 +291,7 @@ async function getAllProducts(reqQuery) {
     console.log(existCategory)
     if (existCategory) {
       query = query.where("category").equals(existCategory._id);
-S    } else {
+   } else {
       return { content: [], currentPage: 1, totalPages: 1 };
     }
   }
