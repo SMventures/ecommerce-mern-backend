@@ -40,7 +40,7 @@ async function createProduct(req, res, next) {
 // Delete a product by ID
 async function deleteProduct(req, res) {
   try {
-    const productId = req.params.id;
+    const productId = req.params.id
     const message = await productService.deleteProduct(productId);
     return res.json({ message });
   } catch (err) {
@@ -70,18 +70,53 @@ async function getSimilarProducts(req, res, next) {
   }
 }
 
-
-
-// Update a product by ID
-async function updateProduct(req, res) {
+//  Find a product by ID
+async function findProductById(req, res) {
   try {
     const productId = req.params.id;
-    const product = await productService.updateProduct(productId, req.body);
-    return res.json(product);
+    const product = await productService.findProductById(productId);
+    res.status(200).send(product);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(404).json({ message: err.message });
   }
 }
+
+// Update a product by ID
+async function updateProduct(req, res, next) {
+  try {
+    const productId = req.params.productId
+    console.log("req params is this ",productId);
+
+    // Conditional buffer access (crucial for memory storage)
+    let dataURI;
+    if (req.file && req.file.buffer) {
+      console.log("File information:", req.file); // Log file details
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+    } else {
+      console.log("No file attached to request.");
+      // Handle the case where a file is not uploaded
+    }
+    console.log("this is request body ",req.body);
+
+    const productData = {
+      ...req.body,
+      size: typeof req.body.size === 'object' ? req.body.size : {} ,
+      image: dataURI
+    };
+
+    const product = await productService.updateProduct(productId, productData);
+    return res.json(product);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return res.status(400).json({ error: "File not found" });
+    } else {
+      console.error('Error:', err.message);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  }
+}
+
 
 // Get all products
 // async function getAllProducts(req, res) {
@@ -93,16 +128,7 @@ async function updateProduct(req, res) {
 //   }
 // }
 
-// Find a product by ID
-async function findProductById(req, res) {
-  try {
-    const productId = req.params.id;
-    const product = await productService.findProductById(productId);
-    return res.status(200).send(product);
-  } catch (err) {
-    return res.status(404).json({ message: err.message });
-  }
-}
+
 
 // Find products by category
 async function findProductByCategory(req, res) {
@@ -163,9 +189,10 @@ module.exports = {
   deleteProduct,
   updateProduct,
   getAllProducts,
-  findProductById,
   findProductByCategory,
   searchProduct,
   createMultipleProduct,
-  getSimilarProducts
+  getSimilarProducts,
+  findProductById
+
 };
