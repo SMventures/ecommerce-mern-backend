@@ -3,7 +3,7 @@ const cors=require('cors');
 const app=express();
 app.use(express.json())
 app.use(cors())
-
+const isAdmin = require("./middleware/Admin");
 
 
 
@@ -25,8 +25,6 @@ app.use("/api/users",userRouter)
 const productRouter=require("./routes/product.routes.js");
 app.use("/api/products",productRouter);
 
-const adminProductRouter=require("./routes/product.admin.routes.js");
-app.use("/api/admin/products",adminProductRouter);
 
 const cartRouter=require("./routes/cart.routes.js")
 app.use("/api/cart", cartRouter);
@@ -46,14 +44,17 @@ app.use("/api/reviews",reviewRouter);
 const ratingRouter=require("./routes/rating.routes.js");
 app.use("/api/ratings",ratingRouter);
 
-// admin routes handler
-const adminOrderRoutes=require("./routes/adminOrder.routes.js");
-app.use("/api/admin/orders",adminOrderRoutes);
-
 const wishlistRouter=require("./routes/wishlist.routes.js")
 app.use("/api/wishlist", wishlistRouter);
 
 const wishlistItemRouter=require("./routes/wishlistItem.routes.js")
 app.use("/api/wishlist_items",wishlistItemRouter);
+
+// admin routes handler
+const adminOrderRoutes=require("./routes/adminOrder.routes.js");
+app.use("/api/admin/orders",isAdmin,adminOrderRoutes);
+
+const adminProductRouter=require("./routes/product.admin.routes.js");
+app.use("/api/admin/products",isAdmin,adminProductRouter);
 
 module.exports={app};
