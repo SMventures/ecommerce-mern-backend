@@ -15,11 +15,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-const adminProductRouter = require('./routes/product.admin.routes.js');
-app.use('/api/admin/products', isAdmin, adminProductRouter);
+// const adminProductRouter = require('./routes/product.admin.routes.js');
+// app.use('/api/admin/products', isAdmin, adminProductRouter);
 
-const adminOrderRoutes=require("./routes/adminOrder.routes.js");
-app.use("/api/admin/orders",isAdmin,adminOrderRoutes);
+// const adminOrderRoutes=require("./routes/adminOrder.routes.js");
+// app.use("/api/admin/orders",isAdmin,adminOrderRoutes);
 
 const PORT=5454;
 app.listen(PORT,async ()=>{

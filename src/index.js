@@ -52,9 +52,9 @@ app.use("/api/wishlist_items",wishlistItemRouter);
 
 // admin routes handler
 const adminOrderRoutes=require("./routes/adminOrder.routes.js");
-app.use("/api/admin/orders",isAdmin,adminOrderRoutes);
+app.use("/api/admin/orders",adminOrderRoutes);
 
 const adminProductRouter=require("./routes/product.admin.routes.js");
-app.use("/api/admin/products",isAdmin,adminProductRouter);
+app.use("/api/admin/products",adminProductRouter);
 
 module.exports={app};
