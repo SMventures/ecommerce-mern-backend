@@ -68,5 +68,83 @@ async function addCartItem(userId, req) {
 
   return 'Item added to cart';
 }
+// const addMultipleItemsToCart = async (userId, productIds) => {
+//   const cart = await Cart.findOne({ user: userId });
+//   let numItemsAdded = 0;
 
-module.exports = { createCart, findUserCart, addCartItem };
+//   if (!productIds || !productIds.length) {
+//     return { message: "No products to add to cart", status: false };
+//   }
+
+//   for (const productId of productIds) {
+//     const product = await Product.findById(productId);
+//     if (!product) {
+//       continue;
+//     }
+
+//     const isPresent = await CartItem.findOne({ cart: cart._id, product: product._id, userId });
+
+//     if (!isPresent) {
+//       const cartItem = new CartItem({
+//         product: product._id,
+//         cart: cart._id,
+//         quantity: 1,
+//         userId,
+//         price: product.discountedPrice,
+//         size: 'default', // Assuming default size for now
+//         discountedPrice: product.discountedPrice
+//       });
+
+//       const createdCartItem = await cartItem.save();
+//       cart.cartItems.push(createdCartItem);
+//       await cart.save();
+//       numItemsAdded++;
+//     }
+//   }
+
+//   const message = numItemsAdded > 0 ? "Items Added To Cart Successfully" : "No products added to cart";
+//   const status = numItemsAdded > 0;
+//   const updatedCart = await Cart.findById(cart._id).populate('cartItems.product');
+
+//   return { message, status, updatedCart };
+// };
+// Assuming you have a Cart model imported or defined somewhere
+
+async function addMultipleItemsToCart(userId, req) {
+  const cart = await Cart.findOne({ user: userId });
+  const productIds = req.productIds; // Assuming req contains an array of product IDs
+  const itemsAdded = [];
+
+  // Loop through each productId in the array
+  for (const productId of productIds) {
+    const product = await Product.findById(productId);
+    const isPresent = await CartItem.findOne({ cart: cart._id, product: product._id, userId });
+
+    if (!isPresent) {
+      const cartItem = new CartItem({
+        product: product._id,
+        cart: cart._id,
+        quantity: 1,
+        userId,
+        price: product.discountedPrice,
+        size: req.size, // Assuming size is provided in req
+        discountedPrice: product.discountedPrice
+      });
+
+      const createdCartItem = await cartItem.save();
+      cart.cartItems.push(createdCartItem);
+      await cart.save();
+
+      itemsAdded.push(createdCartItem); // Push the added item to the itemsAdded array
+    }
+  }
+
+  return itemsAdded;
+}
+
+
+
+
+
+
+module.exports = { createCart, findUserCart, addCartItem,addMultipleItemsToCart};

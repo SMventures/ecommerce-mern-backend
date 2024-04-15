@@ -85,11 +85,11 @@ const getAllUsers = async () => {
     }
 };
 
-const updateUserPersonalInfo = async (userId, updatedInfo) => {
+const updateUserById = async (userId, updatedInfo) => { // Rename updateUserPersonalInfo to updateUserById
     try {
         const user = await findUserById(userId);
-        Object.assign(user, updatedInfo); // Update user object with new data
-        await user.save(); // Save updated user
+        Object.assign(user, updatedInfo);
+        await user.save();
         return user;
     } catch (error) {
         console.log("Error: ", error.message);
@@ -104,5 +104,4 @@ module.exports = {
     getUserProfileByToken,
     getUserByEmail,
     getAllUsers,
-    updateUserPersonalInfo
-};
+    updateUserById};

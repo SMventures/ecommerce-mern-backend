@@ -9,11 +9,11 @@ const wishlistSchema = new mongoose.Schema({
   wishlistItems: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'wishlistItems',
-    required: true,
+
   }],
   totalItems: {
     type: Number,
-    required: true,
+
     default: 0
   },
 });

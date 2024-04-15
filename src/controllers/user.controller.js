@@ -1,4 +1,5 @@
 const userService = require("../services/user.service");
+const { updateUserById } = require("../services/user.service");
 
 const getUserProfile = async (req, res) => {
     try {
@@ -28,16 +29,18 @@ const getAllUsers = async (req, res) => {
 
 const updateUserPersonalInfo = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.params.id;
         const updatedInfo = req.body;
 
-        const updatedUser = await updateUserPersonalInfo(userId, updatedInfo);
+        const updatedUser = await updateUserById(userId, updatedInfo); // Call updateUserById instead of updateUserPersonalInfo
         return res.status(200).send(updatedUser);
     } catch (error) {
         console.log("Error from controller - ", error);
         return res.status(500).send({ error: error.message });
     }
 };
+
+
 
 
 module.exports = { getUserProfile, getAllUsers, updateUserPersonalInfo };
